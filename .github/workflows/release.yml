@@ -1,0 +1,55 @@
+name: Create Release
+
+on:
+    push:
+        tags:
+            - 'v*'
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up JDK
+              uses: actions/setup-java@v4
+              with:
+                  distribution: 'zulu'
+                  java-version: '21'
+
+            - name: Build with Maven
+              run: mvn clean package
+
+            - name: Rebuild with Maven
+              run: mvn clean package
+
+            - name: Extract version from pom.xml
+              id: extract_version
+              run: |
+                  version=$(xmllint --xpath "string(//project/version)" pom.xml)
+                  echo "::set-output name=version::${version%-RELEASE}"
+
+            - name: Create tmp directory and copy JAR
+              run: |
+                  mkdir tmp
+                  cp cloudsystem-loader/target/cloudsystem.jar tmp
+
+            - name: Upload artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: BedrockCloud
+                  path: tmp
+
+            - name: Create GitHub Release
+              uses: actions/create-release@v1
+              with:
+                  tag_name: v${{ steps.extract_version.outputs.version }}
+                  release_name: ${{ steps.extract_version.outputs.version }}
+                  body: |
+                      Release of version ${{ steps.extract_version.outputs.version }}
+                  draft: false
+                  prerelease: false
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
