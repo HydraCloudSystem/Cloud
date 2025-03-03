@@ -25,6 +25,9 @@ jobs:
             - name: Rebuild with Maven
               run: mvn clean package
 
+            - name: Install xmllint
+              run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
             - name: Extract version from pom.xml
               id: extract_version
               run: |
