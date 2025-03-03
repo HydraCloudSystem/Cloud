@@ -1,5 +1,5 @@
 [![](https://jitpack.io/v/BedrockCloud/CloudSystem.svg)](https://jitpack.io/#BedrockCloud/CloudSystem)
-# BedrockCloud
+# HydraCloud
 
 ## Requirements
 - Java 17
