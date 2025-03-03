@@ -32,7 +32,7 @@ jobs:
               id: extract_version
               run: |
                   version=$(xmllint --xpath "string(//project/version)" pom.xml)
-                  echo "::set-output name=version::${version%-RELEASE}"
+                  echo "name=version::${version%-RELEASE}" >> $GITHUB_OUTPUT
 
             - name: Create tmp directory and copy JAR
               run: |
@@ -56,3 +56,10 @@ jobs:
                   prerelease: false
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Upload artifact to release
+              uses: softprops/action-gh-release@v1
+              with:
+                  files: tmp/**
+                  env:
+                      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
