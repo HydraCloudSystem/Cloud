@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,33 +67,55 @@ public final class WorkerThread extends Thread {
     }
 
     private void checkForQueue() {
-        addServiceToQueueWhereProvided();
+        addServicesToQueueIfNeededAsync();
+
         if (minBootableServiceExists()) return;
 
-        var services = this.base.getServiceManager().getAllServicesByState(ServiceState.PREPARED).stream()
+        var localPreparedServices = this.base.getServiceManager().getAllServicesByState(ServiceState.PREPARED).stream()
             .filter(service -> service.getGroup().getNode().equalsIgnoreCase(this.base.getNode().getName()))
             .toList();
-        if (!services.isEmpty()) {
-            ((SimpleServiceManager) this.base.getServiceManager()).start(services.get(0));
+
+        if (!localPreparedServices.isEmpty()) {
+            var serviceToStart = localPreparedServices.get(0);
+            ((SimpleServiceManager) this.base.getServiceManager()).start(serviceToStart);
         }
     }
 
-    private void addServiceToQueueWhereProvided() {
-        this.base.getGroupManager().getAllCachedServiceGroups().stream()
-            .filter(serviceGroup -> serviceGroup.getNode().equalsIgnoreCase(this.base.getNode().getName()))
-            .filter(serviceGroup -> getAmountOfGroupServices(serviceGroup) < serviceGroup.getMinOnlineService())
-            .forEach(serviceGroup -> {
-                var service = new LocalService(serviceGroup, getPossibleServiceIDByGroup(serviceGroup),
-                    PortHandler.getNextPort(serviceGroup), this.base.getNode().getHostName());
-                this.base.getServiceManager().getAllCachedServices().add(service);
-                this.base.getNode().sendPacketToAll(new ServiceAddPacket(service));
-                this.base.getLogger().log(String.format(
-                    "§7The group '§b%s§7' is starting a new instance of '§b%s§7' (§6Prepared§7)",
-                    serviceGroup.getName(),
-                    service.getName()
-                ));
-            });
+    private void addServicesToQueueIfNeededAsync() {
+        CompletableFuture.runAsync(() -> {
+            var groupManager = this.base.getGroupManager();
+            var serviceManager = this.base.getServiceManager();
+            var currentNodeName = this.base.getNode().getName();
+
+            groupManager.getAllCachedServiceGroups().stream()
+                .filter(group -> group.getNode().equalsIgnoreCase(currentNodeName))
+                .filter(group -> getAmountOfGroupServices(group) < group.getMinOnlineService())
+                .forEach(group -> {
+                    try {
+                        var serviceId = getPossibleServiceIDByGroup(group);
+                        var port = PortHandler.getNextPort(group);
+                        var host = this.base.getNode().getHostName();
+
+                        var newService = new LocalService(group, serviceId, port, host);
+
+                        serviceManager.getAllCachedServices().add(newService);
+                        this.base.getNode().sendPacketToAll(new ServiceAddPacket(newService));
+
+                        this.base.getLogger().log(String.format(
+                            "§7Queued new instance for group §b%s§7 → §b%s§7 (§6Prepared§7)",
+                            group.getName(), newService.getName()
+                        ));
+                    } catch (Exception e) {
+                        this.base.getLogger().log(String.format(
+                            "§cFailed to queue service for group §b%s§c: %s",
+                            group.getName(), e.getMessage()
+                        ));
+                        e.printStackTrace();
+                    }
+                });
+        });
     }
+
 
     private boolean minBootableServiceExists() {
         return getAmountOfBootableServices() >= MAX_BOOTABLE_SERVICES;
