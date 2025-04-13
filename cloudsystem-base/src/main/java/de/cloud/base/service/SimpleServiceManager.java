@@ -156,12 +156,14 @@ public final class SimpleServiceManager implements ServiceManager {
         this.allCachedServices = services;
     }
 
-    public void start(final CloudService service) {
+    public CloudService start(final CloudService service) {
         startService(service);
         Base.getInstance().getLogger().log(String.format(
             "§7The service '§b%s§7' has been selected and will now be started.",
             service.getName()
         ));
+
+        return service;
     }
 
     public void startService(@NotNull CloudService service) {
