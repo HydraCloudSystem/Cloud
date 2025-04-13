@@ -20,7 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class CloudPlayerManager extends AbstractPlayerManager {
 
     public CloudPlayerManager() {
-        // Verwenden einer thread-sicheren Map, um Concurrency-Probleme zu vermeiden.
         this.players = new ConcurrentHashMap<>();
     }
 
