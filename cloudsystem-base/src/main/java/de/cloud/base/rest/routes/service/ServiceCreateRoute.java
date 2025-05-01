@@ -28,7 +28,7 @@ public class ServiceCreateRoute implements Route {
                 return "Error: Maximum online service count reached.";
             }
 
-            var service = Base.getInstance().getServiceManager().createNewService(serviceGroupOptional.get(0).getName());
+            var service = Base.getInstance().getServiceManager().prepareService(serviceGroupOptional.get(0).getName());
             return "Success: Service '" + service + "' has been created successfully.";
         } else {
             response.status(404); // 404 = Not Found

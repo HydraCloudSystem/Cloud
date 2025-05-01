@@ -105,7 +105,7 @@ public final class SimpleServiceManager implements ServiceManager {
     }
 
     private void handleServiceStart(ChannelHandlerContext ctx, ServiceStartPacket packet) {
-        var service = createNewService(packet.getServiceGroup());
+        var service = prepareService(packet.getServiceGroup());
         assert service != null;
         if (CloudAPI.getInstance().getServiceManager().getService(service).isPresent()) {
             if (CloudAPI.getInstance().getServiceManager().getService(service).get().getState().equalsIgnoreCase(ServiceState.PREPARED)) {
@@ -121,7 +121,7 @@ public final class SimpleServiceManager implements ServiceManager {
         }
     }
 
-    public String createNewService(String serviceGroup) {
+    public String prepareService(String serviceGroup) {
         var groupOpt = CloudAPI.getInstance().getGroupManager().getServiceGroupByName(serviceGroup);
         if (groupOpt.isEmpty()) {
             Base.getInstance().getLogger().log("Group '" + serviceGroup + "' not found.", LogType.ERROR);
