@@ -2,6 +2,7 @@ package de.cloud.base.service;
 
 import de.cloud.api.logger.LogType;
 import de.cloud.api.network.packet.service.*;
+import de.cloud.api.service.ServiceState;
 import de.cloud.base.Base;
 import de.cloud.api.CloudAPI;
 import de.cloud.api.event.service.CloudServiceUpdateEvent;
@@ -107,7 +108,9 @@ public final class SimpleServiceManager implements ServiceManager {
         var service = createNewService(packet.getServiceGroup());
         assert service != null;
         if (CloudAPI.getInstance().getServiceManager().getService(service).isPresent()) {
-            this.start(CloudAPI.getInstance().getServiceManager().getService(service).get());
+            if (CloudAPI.getInstance().getServiceManager().getService(service).get().getState().equalsIgnoreCase(ServiceState.PREPARED)) {
+                this.start(CloudAPI.getInstance().getServiceManager().getService(service).get());
+            }
         }
     }
 
