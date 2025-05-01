@@ -3,10 +3,7 @@ package de.cloud.wrapper.service;
 import de.cloud.api.event.service.CloudServiceUpdateEvent;
 import de.cloud.api.network.packet.QueryPacket;
 import de.cloud.api.network.packet.RedirectPacket;
-import de.cloud.api.network.packet.service.ServiceAddPacket;
-import de.cloud.api.network.packet.service.ServiceRemovePacket;
-import de.cloud.api.network.packet.service.ServiceRequestShutdownPacket;
-import de.cloud.api.network.packet.service.ServiceUpdatePacket;
+import de.cloud.api.network.packet.service.*;
 import de.cloud.api.service.CloudService;
 import de.cloud.api.service.ServiceManager;
 import de.cloud.network.packet.Packet;
@@ -55,7 +52,7 @@ public final class WrapperServiceManager implements ServiceManager {
 
     @Override
     public void startService(@NotNull CloudService group) {
-        //ToDo: Send Start Packet
+        Wrapper.getInstance().getClient().sendPacket(new ServiceStartPacket(group.getName()));
     }
 
     public CloudService thisService() {

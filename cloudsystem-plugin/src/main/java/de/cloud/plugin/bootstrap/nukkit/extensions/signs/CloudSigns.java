@@ -21,6 +21,8 @@ public class CloudSigns {
     @Getter public static ArrayList<String> cooldown = new ArrayList<>();
     @Getter NukkitBootstrap plugin;
 
+    @Getter private static String prefix = "§8[§cCloudSigns§8]§r ";
+
     public void load(NukkitBootstrap plugin) {
         instance = this;
         configProvider = new ConfigProvider();
