@@ -154,5 +154,4 @@ public interface CloudService {
             networkBuf.readString(),
             networkBuf.readString());
     }
-
 }

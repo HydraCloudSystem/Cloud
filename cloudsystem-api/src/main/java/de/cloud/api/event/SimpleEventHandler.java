@@ -11,12 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 public final class SimpleEventHandler implements EventHandler {
-
-    @SuppressWarnings("rawtypes")
-    private final Map<Class<? extends CloudEvent>, List<Consumer>> events = new ConcurrentHashMap<>();
+    private final Map<Class<? extends CloudEvent>, List<Consumer<? extends CloudEvent>>> events = new ConcurrentHashMap<>();
 
     public SimpleEventHandler() {
         final var packetHandler = CloudAPI.getInstance().getPacketHandler();
@@ -31,14 +30,16 @@ public final class SimpleEventHandler implements EventHandler {
     }
 
     public <T extends CloudEvent> void registerEvent(@NotNull Class<T> clazz, @NotNull Consumer<T> event) {
-        final var consumers = this.events.getOrDefault(clazz, new ArrayList<>());
-        consumers.add(event);
-        this.events.put(clazz, consumers);
+        events.computeIfAbsent(clazz, k -> new CopyOnWriteArrayList<>()).add(event);
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends CloudEvent> void call(@NotNull T t) {
-        this.events.getOrDefault(t.getClass(), new ArrayList<>()).forEach(it -> it.accept(t));
+    public <T extends CloudEvent> void call(@NotNull T event) {
+        List<Consumer<? extends CloudEvent>> consumers = events.get(event.getClass());
+        if (consumers != null) {
+            for (Consumer<? extends CloudEvent> consumer : consumers) {
+                ((Consumer<T>) consumer).accept(event);
+            }
+        }
     }
-
 }
