@@ -8,5 +8,4 @@ public final class CloudPlayerLoginEvent extends DefaultPlayerEvent {
     public CloudPlayerLoginEvent(final @NotNull CloudPlayer cloudPlayer) {
         super(cloudPlayer);
     }
-
 }

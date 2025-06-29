@@ -39,7 +39,5 @@ public class WaterdogCloudBootstrap {
                 }
             }
         });
-
-        server.getLogger().info("Loaded " + this.getClass().getSimpleName() + " successfully.");
     }
 }
