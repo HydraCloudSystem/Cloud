@@ -29,7 +29,7 @@
         <waterdog.version>2.0.3</waterdog.version>
         <gson.version>2.11.0</gson.version>
         <lombok.version>1.18.36</lombok.version>
-        <jannotations.version>26.0.1</jannotations.version>
+        <jannotations.version>26.0.2</jannotations.version>
     </properties>
 
     <dependencyManagement>
